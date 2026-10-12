@@ -14,7 +14,6 @@ DB_NAME = "agendamentos.db"  # caminho relativo, funciona em qualquer PC
 
 
 def conectar():
-    # TODO: retornar sqlite3.connect(DB_NAME)
     pass
 
 
