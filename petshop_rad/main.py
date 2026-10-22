@@ -28,6 +28,7 @@ class App:
         tk.Label(self.root, text="Telefone:").grid(row=2,column=0,padx=5,pady=5)
         tk.Label(self.root, text="CEP:").grid(row=3,column=0,padx=5,pady=5)
         tk.Label(self.root, text="Serviços").grid(row=9, column=0, padx=5, pady=5)
+        tk.Label(self.root, text="Data/Hora").grid(row=10,column=0,padx=5, pady=5)
 
         # ---------- labels do CEP ----------
         tk.Label(self.root, text="Logradouro").grid(row=5, column=0, padx=5, pady=5)
@@ -40,10 +41,11 @@ class App:
         self.entry_pet = tk.Entry(self.root)
         self.entry_tutor = tk.Entry(self.root)
         self.entry_telefone = tk.Entry(self.root)
+        self.entry_data_hora = tk.Entry(self.root)
         # ---------- campos do CEP ----------
         self.entry_logradouro = tk.Entry(self.root)
         self.entry_bairro = tk.Entry(self.root)
-        self.entry_cidade_UF = tk.Entry(self.root)
+        self.entry_cidade_uf = tk.Entry(self.root)
         self.entry_numero = tk.Entry(self.root)
 
         # ---------- grid de campos ----------
@@ -55,25 +57,33 @@ class App:
         # ---------- grid dos capos de CEP ----------
         self.entry_logradouro.grid(row=5, column=1, padx=5, pady=5)
         self.entry_bairro.grid(row=6, column=1, padx=5, pady=5)
-        self.entry_cidade_UF.grid(row=7, column=1, padx=5, pady=5)
+        self.entry_cidade_uf.grid(row=7, column=1, padx=5, pady=5)
         self.entry_numero.grid(row=8, column=1, padx=5, pady=5)
+        self.entry_data_hora.grid(row=10, column=1, padx=5, pady=5)
 
         # ---------- combobox para os serviços ----------
-        self.combo_servico = ttk.Combobox(self.root, values=["Consulta", "Vacinação", "Banho e Tosa"], state="readonly")
+        self.combo_servico = ttk.Combobox(self.root, values=["Consulta", "Vacinação", "Banho e Tosa"], state="readonly", width=18)
 
         self.combo_servico.grid(row=9, column=1, padx=5, pady=5)
 
     def criar_botoes(self):
         tk.Button(self.root, text="Buscar CEP", command=self.on_buscar_cep).grid(row=3,column=3,padx=5,pady=6)
 
-
     def criar_treeview(self):
+        colunas = ("id", "pet", "tutor", "servico", "data_hora")
+        titulos = ["ID", "Pet", "Tutor", "Serviço", "Data e Hora"]
 
-        pass
+        self.tree = ttk.Treeview(self.root, columns=colunas, show="headings", height=8)
+
+        for col, titulo in zip(colunas, titulos):
+            self.tree.heading(col, text=titulo)
+
+        self.tree.column("id", width=40)
+        self.tree.grid(row=0, column=4, rowspan=11, padx=10, pady=5)
+        self.tree.bind("<<TreeviewSelect>>", self.on_selecionar)    
 
     # ---------- acoes ----------
     def on_buscar_cep(self):
-        url = "https://viacep.com.br/ws/{}/json/"
         dados = buscar_cep(self.entry_cep.get())
         
         if dados is None:
@@ -82,7 +92,7 @@ class App:
         
         self.preencher(self.entry_logradouro, dados["logradouro"])
         self.preencher(self.entry_bairro, dados["bairro"])
-        self.preencher(self.entry_cidade_UF, dados["localidade"] + "/" + dados["uf"])
+        self.preencher(self.entry_cidade_uf, dados["localidade"] + "/" + dados["uf"])
         
         pass
 
@@ -100,8 +110,10 @@ class App:
 
     # ---------- utilitarios ----------
     def atualizar_grade(self):
-
-        pass
+        for item in self.tree.get_children():
+            self.tree.delete(item)
+        for r in listar():
+            self.tree.insert("", "end", values=(r[0], r[1], r[2], r[9], r[10]))
 
     def limpar_form(self):
 
