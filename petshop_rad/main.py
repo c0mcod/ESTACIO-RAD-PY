@@ -7,7 +7,7 @@ from tkinter import ttk, messagebox
 
 from database import criar_tabela, inserir, listar, atualizar, excluir
 from viacep import buscar_cep
-
+from popular_dados import SERVICOS
 
 class App:
     def __init__(self, root):
@@ -62,7 +62,7 @@ class App:
         self.entry_data_hora.grid(row=10, column=1, padx=5, pady=5)
 
         # ---------- combobox para os serviços ----------
-        self.combo_servico = ttk.Combobox(self.root, values=["Consulta", "Vacinação", "Banho e Tosa"], state="readonly", width=18)
+        self.combo_servico = ttk.Combobox(self.root, values=(SERVICOS), state="readonly", width=18)
 
         self.combo_servico.grid(row=9, column=1, padx=5, pady=5)
 
