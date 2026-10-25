@@ -67,7 +67,10 @@ class App:
         self.combo_servico.grid(row=9, column=1, padx=5, pady=5)
 
     def criar_botoes(self):
-        tk.Button(self.root, text="Buscar CEP", command=self.on_buscar_cep).grid(row=3,column=3,padx=5,pady=6)
+        tk.Button(self.root, text="Buscar CEP", command=self.on_buscar_cep).grid(row=3,column=2,padx=5,pady=5)
+        tk.Button(self.root, text="Salvar", command=self.on_salvar).grid(row=11, column=0, padx=5,pady=5)
+        tk.Button(self.root, text="Excluir", command=self.on_excluir).grid(row=11, column=1, padx=5,pady=5)
+        tk.Button(self.root, text="Limpar", command=self.limpar_form).grid(row=11, column=2, padx=5,pady=5)
 
     def criar_treeview(self):
         colunas = ("id", "pet", "tutor", "servico", "data_hora")
@@ -93,20 +96,65 @@ class App:
         self.preencher(self.entry_logradouro, dados["logradouro"])
         self.preencher(self.entry_bairro, dados["bairro"])
         self.preencher(self.entry_cidade_uf, dados["localidade"] + "/" + dados["uf"])
-        
-        pass
 
     def on_salvar(self):
+        pet = self.entry_pet.get().strip()
+        tutor = self.entry_tutor.get().strip()
+        telefone = self.entry_telefone.get().strip().replace("(", "").replace(")", "").replace("-", "").replace(" ", "")
+        cep = self.entry_cep.get().strip().replace("-", "").replace(".", "")
+        logradouro = self.entry_logradouro.get().strip()
+        bairro = self.entry_bairro.get().strip()
+        cidade_uf = self.entry_cidade_uf.get().strip()
+        numero = self.entry_numero.get().strip()
+        servico = self.combo_servico.get().strip()
+        data_hora = self.entry_data_hora.get().strip()
 
-        pass
+        # 2) validar
+        if not pet or not tutor or not servico or not data_hora:
+            messagebox.showwarning("Aviso", "Preencha pet, tutor, serviço e data/hora.")
+            return
+
+        # 3) criar ou atualizar
+        if self.id_selecionado is None:
+            inserir(pet, tutor, telefone, cep, logradouro, bairro, cidade_uf, numero, servico, data_hora)
+        else:
+            atualizar(self.id_selecionado, pet, tutor, telefone, cep, logradouro, bairro, cidade_uf, numero, servico, data_hora)
+
+        self.atualizar_grade()
+        self.limpar_form()
 
     def on_excluir(self):
-
-        pass
+        if self.id_selecionado is None:
+            messagebox.showwarning("Aviso", "Selecione um agendamento na tabela.")
+            return
+        if messagebox.askyesno("Confirmar", "Deseja realmente excluir este agendamento?"):
+            excluir(self.id_selecionado)
+            self.atualizar_grade()
+            self.limpar_form()
 
     def on_selecionar(self, event):
+        sel = self.tree.selection()
 
-        pass
+        if not sel:
+            return
+        
+        id_ = int(self.tree.item(sel[0], "values")[0])
+
+        registro = next((r for r in listar() if r[0] == id_), None)
+        if registro  is None:
+            return
+
+        self.id_selecionado = id_
+        self.preencher(self.entry_pet,registro[1])
+        self.preencher(self.entry_tutor, registro[2])
+        self.preencher(self.entry_telefone, registro[3])
+        self.preencher(self.entry_cep, registro[4])
+        self.preencher(self.entry_logradouro, registro[5])
+        self.preencher(self.entry_bairro, registro[6])
+        self.preencher(self.entry_cidade_uf, registro[7])
+        self.preencher(self.entry_numero, registro[8])
+        self.preencher(self.combo_servico, registro[9])
+        self.preencher(self.entry_data_hora, registro[10])
 
     # ---------- utilitarios ----------
     def atualizar_grade(self):
@@ -116,8 +164,16 @@ class App:
             self.tree.insert("", "end", values=(r[0], r[1], r[2], r[9], r[10]))
 
     def limpar_form(self):
-
-        pass
+        entries = (self.entry_pet, self.entry_tutor, self.entry_telefone,
+                   self.entry_cep, self.entry_logradouro, self.entry_bairro,
+                   self.entry_cidade_uf, self.entry_numero, self.entry_data_hora)
+        for entry in entries:
+            entry.delete(0, "end")
+    
+        self.combo_servico.set("")
+        self.id_selecionado = None
+        self.tree.selection_remove(self.tree.selection())
+        self.entry_pet.focus()
 
     def preencher(self, entry, texto):
         entry.delete(0, "end")
