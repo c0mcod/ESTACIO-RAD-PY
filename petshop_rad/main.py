@@ -88,11 +88,11 @@ class App:
     # ---------- acoes ----------
     def on_buscar_cep(self):
         dados = buscar_cep(self.entry_cep.get())
-        
-        if dados is None:
-            messagebox.showwarning("Aviso", "CEP não encontrado.")
+    
+        if "erro" in dados:
+            messagebox.showwarning("Aviso", dados["erro"])
             return
-        
+    
         self.preencher(self.entry_logradouro, dados["logradouro"])
         self.preencher(self.entry_bairro, dados["bairro"])
         self.preencher(self.entry_cidade_uf, dados["localidade"] + "/" + dados["uf"])
